@@ -39,7 +39,7 @@ A small legend appears inside the top-right of the plot area labelling both line
 
 ### Usage
 
-Download HArwellXPS Wagner Plot Generator v3.html and open it in Chrome, Firefox, Edge, or Safari. No internet connection is required after the initial load of two Google Fonts.
+Download HArwellXPS Wagner Plot Generator v4.html and open it in Chrome, Firefox, Edge, or Safari. No internet connection is required after the initial load of two Google Fonts.
 
 ### Technical notes
 
