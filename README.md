@@ -26,7 +26,7 @@ Wagner plots display core-level binding energy (x-axis, in the negative directio
 
 •	Horizontal data strip — all plotted points displayed as colour-coded cards below the plot for at-a-glance review and one-click removal
 
-NEW 26/04/2026 - Addition of Slope = 1 and Sloper = 3 functions
+NEW 26/04/2026 - Addition of Slope = 1 and Slope = 3 functions. Note v5 uses the correct definition for control by initial and final states to allign with the work of Moretti et al.
 
 How the slope lines work:
 Each data card in the bottom strip has a ⊙ button (the ring icon). Clicking it designates that point as a reference anchor — typically you'd pick the metallic state, as in the Moretti Cu/Zn plots and the Gallium exercise.
