@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ni Auger Parameter Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #0f1520;
+    --surface2: #151d2e;
+    --border: #1e2d47;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --accent3: #7cfc00;
+    --text: #c8d8f0;
+    --muted: #4a6080;
+    --header: #e8f4ff;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  header {
+    margin-bottom: 40px;
+  }
+
+  .label-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    border: 1px solid var(--accent);
+    display: inline-block;
+    padding: 3px 10px;
+    margin-bottom: 16px;
+  }
+
+  h1 {
+    font-family: var(--sans);
+    font-size: clamp(22px, 4vw, 38px);
+    font-weight: 800;
+    color: var(--header);
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    line-height: 1.7;
+  }
+
+  .eq-banner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 28px 0;
+    padding: 18px 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+  }
+
+  .eq-item {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .eq-item strong { color: var(--accent); }
+
+  /* Reference panel */
+  .ref-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+    margin-bottom: 28px;
+  }
+
+  .ref-panel-title {
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 14px;
+  }
+
+  .ref-inputs {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .ref-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .ref-field label {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .ref-field input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--accent2);
+    font-family: var(--mono);
+    font-size: 14px;
+    padding: 7px 12px;
+    width: 130px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .ref-field input:focus { border-color: var(--accent2); }
+
+  .ref-derived {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .ref-kv { font-size: 11px; color: var(--muted); }
+  .ref-kv span { color: var(--accent2); font-weight: 700; }
+
+  /* Add compound section */
+  .add-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent3);
+    padding: 20px;
+    margin-bottom: 28px;
+  }
+
+  .add-title {
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent3);
+    margin-bottom: 16px;
+  }
+
+  .add-row {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+  }
+
+  .add-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .add-field label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .add-field input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .add-field input[type="text"] { width: 140px; }
+  .add-field input[type="number"] { width: 130px; }
+  .add-field input:focus { border-color: var(--accent); }
+
+  .btn {
+    background: transparent;
+    border: 1px solid var(--accent3);
+    color: var(--accent3);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    padding: 9px 18px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    align-self: flex-end;
+  }
+
+  .btn:hover {
+    background: var(--accent3);
+    color: var(--bg);
+  }
+
+  .btn-load {
+    border-color: var(--accent);
+    color: var(--accent);
+    font-size: 10px;
+    padding: 7px 14px;
+  }
+
+  .btn-load:hover { background: var(--accent); color: var(--bg); }
+
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .preset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 5px 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.05em;
+  }
+
+  .preset-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  /* Table */
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .results-label {
+    font-family: var(--sans);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 900px;
+  }
+
+  thead tr {
+    border-bottom: 2px solid var(--accent);
+  }
+
+  th {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 10px 12px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  th:first-child { text-align: left; }
+
+  th sub {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    animation: fadeRow 0.3s ease forwards;
+  }
+
+  @keyframes fadeRow {
+    from { opacity: 0; transform: translateX(-8px); }
+    to   { opacity: 1; transform: translateX(0); }
+  }
+
+  tbody tr:hover { background: var(--surface2); }
+
+  tbody tr.reference-row { background: rgba(0,229,255,0.04); }
+  tbody tr.reference-row td { color: var(--header); }
+
+  td {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 11px 12px;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  td:first-child {
+    text-align: left;
+    color: var(--header);
+    font-weight: 700;
+  }
+
+  td.negative { color: #ff6b6b; }
+  td.positive { color: var(--accent3); }
+  td.neutral  { color: var(--muted); }
+
+  .delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 2px 6px;
+    transition: color 0.2s;
+  }
+
+  .delete-btn:hover { color: #ff6b6b; }
+
+  /* Footer note */
+  .footnote {
+    margin-top: 20px;
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.8;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  .footnote em { color: var(--accent); font-style: normal; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { height: 4px; width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="label-tag">XPS Analysis Tool</div>
+    <h1>Ni Auger Parameter <span>Calculator</span></h1>
+    <p class="subtitle">
+      Biesinger et al., Phys. Chem. Chem. Phys., 2012, 14, 2434–2442 &nbsp;|&nbsp; 
+      Reproduces Table 3: Ni 2p<sub>3/2</sub> & Ni LMM peak positions, Auger parameter α′, ΔE<sub>b</sub>, ΔE<sub>k</sub>, Δα′, ΔR and Δε
+    </p>
+  </header>
+
+  <div class="eq-banner">
+    <div class="eq-item"><strong>α′</strong> = E<sub>b</sub> + E<sub>k</sub> &nbsp;[Eq. 1]</div>
+    <div class="eq-item"><strong>Δα′</strong> = ΔE<sub>b</sub> + ΔE<sub>k</sub> &nbsp;[Eq. 2]</div>
+    <div class="eq-item"><strong>Δα′</strong> ≈ 2ΔR &nbsp;[Eq. 3]</div>
+    <div class="eq-item"><strong>ΔE<sub>b</sub></strong> = −Δε − ΔR &nbsp;[Eq. 4]</div>
+    <div class="eq-item"><strong>ΔE<sub>k</sub></strong> = Δε + 3ΔR &nbsp;[Eq. 5]</div>
+    <div class="eq-item" style="margin-left:auto;color:#7cfc00;font-size:10px;">
+      ∴ ΔR = Δα′/2 &nbsp;&nbsp; Δε = −ΔE<sub>b</sub> − ΔR
+    </div>
+  </div>
+
+  <!-- Reference Compound -->
+  <div class="ref-panel">
+    <div class="ref-panel-title">▶ Reference Compound (Ni Metal)</div>
+    <div class="ref-inputs">
+      <div class="ref-field">
+        <label>E<sub>b</sub> (Ni 2p<sub>3/2</sub>) / eV</label>
+        <input type="number" id="ref-eb" value="852.54" step="0.01" oninput="updateAll()">
+      </div>
+      <div class="ref-field">
+        <label>E<sub>k</sub> (Ni LMM) / eV</label>
+        <input type="number" id="ref-ek" value="846.22" step="0.01" oninput="updateAll()">
+      </div>
+    </div>
+    <div class="ref-derived" id="ref-derived"></div>
+  </div>
+
+  <!-- Add Compound -->
+  <div class="add-section">
+    <div class="add-title">+ Add Compound</div>
+    <div class="add-row">
+      <div class="add-field">
+        <label>Compound name</label>
+        <input type="text" id="new-name" placeholder="e.g. NiO" />
+      </div>
+      <div class="add-field">
+        <label>E<sub>b</sub> Ni 2p<sub>3/2</sub> / eV</label>
+        <input type="number" id="new-eb" placeholder="853.78" step="0.01" />
+      </div>
+      <div class="add-field">
+        <label>E<sub>k</sub> Ni LMM / eV</label>
+        <input type="number" id="new-ek" placeholder="843.93" step="0.01" />
+      </div>
+      <button class="btn" onclick="addCompound()">Calculate &amp; Add</button>
+    </div>
+    <div class="presets">
+      <span style="font-size:10px;color:var(--muted);align-self:center;margin-right:4px;">Load preset:</span>
+      <button class="preset-btn" onclick="loadPreset('A600',852.70,846.02)">A600</button>
+      <button class="preset-btn" onclick="loadPreset('A800',852.85,845.87)">A800</button>
+      <button class="preset-btn" onclick="loadPreset('NiO',853.78,843.93)">NiO</button>
+      <button class="preset-btn" onclick="loadPreset('Ni(OH)₂',855.80,842.58)">Ni(OH)₂</button>
+      <button class="preset-btn" onclick="loadPreset('γ-NiOOH',855.75,844.29)">γ-NiOOH</button>
+      <button class="preset-btn" onclick="loadPreset('NiF₂',858.12,839.74)">NiF₂</button>
+      <button class="preset-btn" onclick="loadPreset('NiCl₂',856.77,841.88)">NiCl₂</button>
+      <button class="preset-btn" onclick="loadPreset('NiBr₂',855.27,843.25)">NiBr₂</button>
+      <button class="preset-btn" onclick="loadPreset('NiI₂',854.46,845.23)">NiI₂</button>
+      <button class="preset-btn" onclick="loadAllPresets()" style="border-color:var(--accent);color:var(--accent);">Load All (Table 3)</button>
+      <button class="preset-btn" onclick="clearAll()" style="border-color:#ff6b6b;color:#ff6b6b;">Clear All</button>
+    </div>
+  </div>
+
+  <!-- Results Table -->
+  <div class="results-label">Results — Table 3</div>
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th>Compound</th>
+          <th>E<sub>b</sub> (Ni 2p<sub>3/2</sub>) / eV</th>
+          <th>E<sub>k</sub> (Ni LMM) / eV</th>
+          <th>α′ / eV</th>
+          <th>ΔE<sub>b</sub></th>
+          <th>ΔE<sub>k</sub></th>
+          <th>Δα′</th>
+          <th>ΔR</th>
+          <th>Δε</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="results-body"></tbody>
+    </table>
+  </div>
+
+  <div class="footnote">
+    <em>Sign convention:</em> positive Δε (initial state) and positive ΔR (final state) both contribute to a shift to <em>lower</em> binding energy (Eq. 4).
+    ΔR = Δα′/2 follows from Eq. 3 (assumes relaxation energy for doubly ionised Auger final state = 2R).
+    Δε = −ΔE<sub>b</sub> − ΔR derived from Eq. 4. &nbsp;|&nbsp;
+    Reference: Biesinger et al., <em>Phys. Chem. Chem. Phys.</em> 2012, <strong>14</strong>, 2434.
+  </div>
+
+</div>
+
+<script>
+  // Compound data store
+  let compounds = [];
+
+  function getRef() {
+    return {
+      eb: parseFloat(document.getElementById('ref-eb').value) || 852.54,
+      ek: parseFloat(document.getElementById('ref-ek').value) || 846.22
+    };
+  }
+
+  function calcRow(eb, ek, ref) {
+    const alpha = eb + ek;
+    const refAlpha = ref.eb + ref.ek;
+    const dEb = eb - ref.eb;
+    const dEk = ek - ref.ek;
+    const dAlpha = dEb + dEk;
+    const dR = dAlpha / 2;
+    const dEps = -dEb - dR;
+    return { eb, ek, alpha, dEb, dEk, dAlpha, dR, dEps };
+  }
+
+  function fmt(v, decimals=2) {
+    return v.toFixed(decimals);
+  }
+
+  function signed(v) {
+    return v >= 0 ? '+' + fmt(v) : fmt(v);
+  }
+
+  function colorClass(v) {
+    if (Math.abs(v) < 0.005) return 'neutral';
+    return v < 0 ? 'negative' : 'positive';
+  }
+
+  function renderRef() {
+    const ref = getRef();
+    const alpha = ref.eb + ref.ek;
+    document.getElementById('ref-derived').innerHTML =
+      `<div class="ref-kv">α′ = E<sub>b</sub> + E<sub>k</sub> = <span>${fmt(alpha, 2)} eV</span></div>
+       <div class="ref-kv">ΔE<sub>b</sub> = <span>0.00</span></div>
+       <div class="ref-kv">ΔE<sub>k</sub> = <span>0.00</span></div>
+       <div class="ref-kv">Δα′ = <span>0.00</span></div>
+       <div class="ref-kv">ΔR = <span>0.00</span></div>
+       <div class="ref-kv">Δε = <span>0.00</span></div>`;
+  }
+
+  function renderTable() {
+    const ref = getRef();
+    const tbody = document.getElementById('results-body');
+
+    // Reference row
+    const refAlpha = ref.eb + ref.ek;
+    let html = `<tr class="reference-row">
+      <td>Ni metal <small style="color:var(--accent);font-size:9px">[ref]</small></td>
+      <td>${fmt(ref.eb, 2)}</td>
+      <td>${fmt(ref.ek, 2)}</td>
+      <td>${fmt(refAlpha, 2)}</td>
+      <td class="neutral">—</td>
+      <td class="neutral">—</td>
+      <td class="neutral">—</td>
+      <td class="neutral">—</td>
+      <td class="neutral">—</td>
+      <td></td>
+    </tr>`;
+
+    compounds.forEach((c, i) => {
+      const r = calcRow(c.eb, c.ek, ref);
+      html += `<tr>
+        <td>${c.name}</td>
+        <td>${fmt(r.eb, 2)}</td>
+        <td>${fmt(r.ek, 2)}</td>
+        <td>${fmt(r.alpha, 2)}</td>
+        <td class="${colorClass(r.dEb)}">${signed(r.dEb)}</td>
+        <td class="${colorClass(r.dEk)}">${signed(r.dEk)}</td>
+        <td class="${colorClass(r.dAlpha)}">${signed(r.dAlpha)}</td>
+        <td class="${colorClass(r.dR)}">${signed(r.dR)}</td>
+        <td class="${colorClass(r.dEps)}">${signed(r.dEps)}</td>
+        <td><button class="delete-btn" onclick="removeCompound(${i})" title="Remove">✕</button></td>
+      </tr>`;
+    });
+
+    tbody.innerHTML = html;
+  }
+
+  function updateAll() {
+    renderRef();
+    renderTable();
+  }
+
+  function addCompound() {
+    const name = document.getElementById('new-name').value.trim();
+    const eb = parseFloat(document.getElementById('new-eb').value);
+    const ek = parseFloat(document.getElementById('new-ek').value);
+
+    if (!name) { alert('Please enter a compound name.'); return; }
+    if (isNaN(eb) || isNaN(ek)) { alert('Please enter valid Eb and Ek values.'); return; }
+
+    compounds.push({ name, eb, ek });
+    document.getElementById('new-name').value = '';
+    document.getElementById('new-eb').value = '';
+    document.getElementById('new-ek').value = '';
+    renderTable();
+  }
+
+  function removeCompound(i) {
+    compounds.splice(i, 1);
+    renderTable();
+  }
+
+  function loadPreset(name, eb, ek) {
+    document.getElementById('new-name').value = name;
+    document.getElementById('new-eb').value = eb;
+    document.getElementById('new-ek').value = ek;
+  }
+
+  const ALL_PRESETS = [
+    { name: 'A600',     eb: 852.70, ek: 846.02 },
+    { name: 'A800',     eb: 852.85, ek: 845.87 },
+    { name: 'NiO',      eb: 853.78, ek: 843.93 },
+    { name: 'Ni(OH)₂',  eb: 855.80, ek: 842.58 },
+    { name: 'γ-NiOOH',  eb: 855.75, ek: 844.29 },
+    { name: 'NiF₂',     eb: 858.12, ek: 839.74 },
+    { name: 'NiCl₂',    eb: 856.77, ek: 841.88 },
+    { name: 'NiBr₂',    eb: 855.27, ek: 843.25 },
+    { name: 'NiI₂',     eb: 854.46, ek: 845.23 },
+  ];
+
+  function loadAllPresets() {
+    compounds = ALL_PRESETS.map(p => ({ ...p }));
+    renderTable();
+  }
+
+  function clearAll() {
+    compounds = [];
+    renderTable();
+  }
+
+  // Enter key to add compound
+  ['new-name','new-eb','new-ek'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') addCompound();
+    });
+  });
+
+  // Init
+  updateAll();
+</script>
+</body>
+</html>
